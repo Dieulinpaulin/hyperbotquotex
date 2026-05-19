@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Hyper Dieulyn Bot"/>
+  <meta name="theme-color" content="#030a0f"/>
+  <title>HYPER DIEULYN BOT QUOTEX</title>
+  <link rel="manifest" href="manifest.json"/>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#030a0f;color:#a0c8e0;font-family:'Share Tech Mono',monospace;overflow-x:hidden;}
+    ::-webkit-scrollbar{width:3px}
+    ::-webkit-scrollbar-track{background:#071520}
+    ::-webkit-scrollbar-thumb{background:#0d3a5c}
+    textarea{resize:none;}
+    input,textarea,button{-webkit-appearance:none;border-radius:0;}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useRef, useCallback, useEffect } = React;
+
+    function ApiKeyScreen({ onSave }) {
+      const [key, setKey] = React.useState("");
+      const [show, setShow] = React.useState(false);
+      const [err, setErr] = React.useState("");
+      const handleSave = () => {
+        const k = key.trim();
+        if (!k.startsWith("sk-ant-")) { setErr("Kle a dwe kòmanse ak sk-ant-..."); return; }
+        localStorage.setItem("hdb_apikey", k);
+        onSave(k);
+      };
+      return (
+        <div style={{ minHeight:"100vh", background:"#030a0f", display:"flex", alignItems:"center", justifyContent:"center", padding:20,
+          backgroundImage:"linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px)",
+          backgroundSize:"36px 36px" }}>
+          <div style={{ width:"100%", maxWidth:400 }}>
+            <div style={{ textAlign:"center", marginBottom:28 }}>
+              <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"1.3rem", fontWeight:900, letterSpacing:3,
+                background:"linear-gradient(90deg,#00d4ff,#00ff88)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:8 }}>
+                HYPER DIEULYN BOT
+              </div>
+              <div style={{ fontSize:"11px", letterSpacing:3, color:"#3a6a8a" }}>QUOTEX AI SIGNAL BOT</div>
+            </div>
+            <div style={{ background:"#071520", border:"1px solid #0d3a5c", borderRadius:6, padding:24 }}>
+              <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"12px", color:"#00d4ff", letterSpacing:3, marginBottom:16, textAlign:"center" }}>
+                🔑 METE KLE API OU
+              </div>
+              <div style={{ fontSize:"11px", color:"#a0c8e0", lineHeight:1.9, marginBottom:16,
+                background:"rgba(0,212,255,.04)", border:"1px solid #0d3a5c", borderLeft:"3px solid #00d4ff", padding:"10px 12px", borderRadius:3 }}>
+                Pou jwenn kle API ou:<br/>
+                1. Ale → <span style={{color:"#00d4ff"}}>console.anthropic.com</span><br/>
+                2. Klike <span style={{color:"#00ff88"}}>API Keys</span><br/>
+                3. Kreye yon nouvo kle<br/>
+                4. Kole l anba a
+              </div>
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:"10px", letterSpacing:3, color:"#3a6a8a", marginBottom:6 }}>KLE API</div>
+                <div style={{ position:"relative" }}>
+                  <input type={show?"text":"password"} value={key} onChange={e=>{setKey(e.target.value);setErr("");}}
+                    placeholder="sk-ant-api03-..."
+                    style={{ width:"100%", background:"#030a0f", border:`1px solid ${err?"#ff3366":"#0d3a5c"}`,
+                      color:"#00d4ff", padding:"10px 40px 10px 12px",
+                      fontFamily:"'Share Tech Mono',monospace", fontSize:"12px", outline:"none", boxSizing:"border-box" }}/>
+                  <button onClick={()=>setShow(v=>!v)}
+                    style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)",
+                      background:"none", border:"none", color:"#3a6a8a", cursor:"pointer", fontSize:"14px" }}>
+                    {show?"🙈":"👁"}
+                  </button>
+                </div>
+                {err && <div style={{color:"#ff3366",fontSize:"10px",marginTop:4}}>⚠ {err}</div>}
+              </div>
+              <button onClick={handleSave}
+                style={{ width:"100%", padding:"13px", background:"rgba(0,255,136,.1)",
+                  border:"2px solid #00ff88", color:"#00ff88",
+                  fontFamily:"'Orbitron',monospace", fontSize:"13px", fontWeight:700, letterSpacing:3, cursor:"pointer", borderRadius:2 }}>
+                ⚡ KÒMANSE
+              </button>
+              <div style={{ textAlign:"center", marginTop:10, fontSize:"10px", color:"#3a6a8a" }}>
+                Kle a sove sou aparèy ou — ou pa bezwen tape l ankò
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ===== ACCESS CODE SCREEN =====
+    function AccessCodeScreen({ onVerified }) {
+      const [code, setCode] = React.useState("");
+      const [loading, setLoading] = React.useState(false);
+      const [err, setErr] = React.useState("");
+
+      const verify = async () => {
+        const c = code.trim().toUpperCase();
+        if (!c) { setErr("Tape kòd aksè ou!"); return; }
+        setLoading(true); setErr("");
+        try {
+          const res = await fetch("/.netlify/functions/access", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "verify", code: c })
+          });
+          const data = await res.json();
+          if (data.valid) {
+            localStorage.setItem("hdb_code", c);
+            localStorage.setItem("hdb_code_expires", data.expires_at);
+            localStorage.setItem("hdb_code_name", data.client_name || "");
+            onVerified(data);
+          } else {
+            setErr(data.reason === "KÒD EKSPIRE"
+              ? "⏰ Kòd ou a ekspire! Kontakte nou pou renouvle: 3239-9183"
+              : data.reason === "KÒD PA EGZISTE"
+              ? "❌ Kòd sa a pa egziste. Verifye epi eseye ankò."
+              : `❌ ${data.reason}`);
+          }
+        } catch(e) {
+          setErr("Erè koneksyon. Verifye entènèt ou epi eseye ankò.");
+        }
+        setLoading(false);
+      };
+
+      return (
+        <div style={{ minHeight:"100vh", background:"#030a0f", display:"flex", alignItems:"center", justifyContent:"center", padding:20,
+          backgroundImage:"linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px)",
+          backgroundSize:"36px 36px" }}>
+          <div style={{ width:"100%", maxWidth:400 }}>
+            <div style={{ textAlign:"center", marginBottom:28 }}>
+              <div style={{ fontSize:"3rem", marginBottom:10 }}>⚡</div>
+              <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"1.2rem", fontWeight:900, letterSpacing:3,
+                background:"linear-gradient(90deg,#FFD700,#FFA500)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:8 }}>
+                HYPER DIEULYN BOT
+              </div>
+              <div style={{ fontSize:"11px", letterSpacing:3, color:"#3a6a8a" }}>QUOTEX AI SIGNAL BOT</div>
+            </div>
+
+            <div style={{ background:"#071520", border:"1px solid #FFD700", borderRadius:6, padding:28, boxShadow:"0 0 40px rgba(255,215,0,.1)" }}>
+              <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"12px", color:"#FFD700", letterSpacing:3, marginBottom:20, textAlign:"center" }}>
+                🔐 METE KÒD AKSÈ OU
+              </div>
+
+              <div style={{ fontSize:"11px", color:"#a0c8e0", lineHeight:1.8, marginBottom:20,
+                background:"rgba(255,215,0,.04)", border:"1px solid rgba(255,215,0,.2)",
+                borderLeft:"3px solid #FFD700", padding:"10px 12px", borderRadius:3 }}>
+                Ou bezwen yon <strong style={{color:"#FFD700"}}>kòd aksè</strong> pou itilize bot la.<br/>
+                📱 Abòne: <strong style={{color:"#fff"}}>3239-9183</strong> (WhatsApp)<br/>
+                💰 Pri: <strong style={{color:"#FFD700"}}>3,000 HTG/mwa</strong>
+              </div>
+
+              <div style={{ marginBottom:16 }}>
+                <div style={{ fontSize:"10px", letterSpacing:3, color:"#3a6a8a", marginBottom:8 }}>KÒD AKSÈ (egzanp: HD-XXXX-XXXX)</div>
+                <input
+                  type="text" value={code}
+                  onChange={e=>{setCode(e.target.value.toUpperCase());setErr("");}}
+                  onKeyDown={e=>e.key==="Enter"&&verify()}
+                  placeholder="HD-XXXX-XXXX"
+                  style={{ width:"100%", background:"#030a0f", border:`1px solid ${err?"#ff3366":"#FFD700"}`,
+                    color:"#FFD700", padding:"14px", fontFamily:"'Orbitron',monospace",
+                    fontSize:"16px", outline:"none", boxSizing:"border-box", letterSpacing:3,
+                    textAlign:"center", borderRadius:2 }}/>
+                {err && <div style={{color:"#ff3366",fontSize:"11px",marginTop:6,lineHeight:1.6}}>{err}</div>}
+              </div>
+
+              <button onClick={verify} disabled={loading}
+                style={{ width:"100%", padding:"14px",
+                  background:loading?"transparent":"linear-gradient(135deg,#FFD700,#FFA500)",
+                  border:"2px solid #FFD700", color:loading?"#FFD700":"#000",
+                  fontFamily:"'Orbitron',monospace", fontSize:"13px", fontWeight:900,
+                  letterSpacing:3, cursor:loading?"not-allowed":"pointer", borderRadius:2,
+                  position:"relative" }}>
+                {loading ? "⏳ AP VERIFYE..." : "⚡ ANTRE"}
+              </button>
+
+              <div style={{ textAlign:"center", marginTop:16, fontSize:"10px", color:"#3a6a8a", lineHeight:1.8 }}>
+                Pa gen kòd? Kontakte nou pou abòne<br/>
+                WhatsApp: <span style={{color:"#fff"}}>3239-9183</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const PAIRS = [
+      { g: "FOREX MAJOR", items: ["EUR/USD","GBP/USD","USD/JPY","USD/CHF","AUD/USD","USD/CAD","NZD/USD"] },
+      { g: "FOREX MINOR", items: ["EUR/GBP","EUR/JPY","GBP/JPY","EUR/AUD","GBP/CHF","EUR/CHF","AUD/JPY"] },
+      { g: "CRYPTO", items: ["BTC/USD","ETH/USD","LTC/USD","XRP/USD","BNB/USD","SOL/USD","DOGE/USD"] },
+      { g: "MATYE PREMYE", items: ["XAU/USD","XAG/USD","OIL/USD","GAS/USD"] },
+      { g: "ENDIS", items: ["US100","US500","US30","DE40","UK100","JP225"] },
+    ];
+
+    const TIMERS = [
+      { label:"30S", sec:30 },{ label:"1M", sec:60 },{ label:"2M", sec:120 },
+      { label:"3M", sec:180 },{ label:"5M", sec:300 },
+    ];
+
+    const ANALYZE_PROMPT = `Ou se yon ekspè trader binary options Quotex ak 10 zan eksperyans.
+Ou ap gade yon screenshot grafik LIVE. Ou dwe analize TOUT sa ou wè epi ba siyèn pou PROCHÈN BOUJI ki pral fome.
+
+ANALIZ SA POU OU FÈ:
+1. Wè bouji ki deja fome yo - idantifye pattern (doji, engulfing, hammer, shooting star, marubozu, etc)
+2. Wè direksyon trend jeneral la (MA, estruture pri)
+3. Wè nivo sipò/rezistans enpòtan
+4. Wè volim si disponib
+5. PREDI: Ki direksyon PROCHÈN BOUJI a pral ale? UP oswa DOWN?
+6. Bay konfyans reyèl ou - pa mete 90%+ si ou pa sèten
+
+REPONN SÈLMAN JSON STRIK, san teks, san backtick, san esplikasyon andeyo:
+{
+  "signal": "UP",
+  "confidence": 75,
+  "entry": "KOUNYE A",
+  "expiry": "1 MIN",
+  "trend": "HAUSYE",
+  "pattern_we": "Bouji pattern wè a",
+  "pattern_pwal": "Sa ou prevwa pou prochèn bouji",
+  "support": "nivo oswa N/A",
+  "resistance": "nivo oswa N/A",
+  "risk": "MODERE",
+  "prochen_bouji": "UP",
+  "fos_siyen": "FO",
+  "indikasyon": "RSI, MA, MACD, BB - sa ou wè sou grafik",
+  "reasoning": "3-4 fraz Kreyòl - esplike POUKISA ou panse prochèn bouji a pral ale nan direksyon sa a"
+}`;
+
+    const CHAT_SYSTEM = `Ou se yon ekspè trading binary options ak Quotex ki rele "HYPER DIEULYN BOT". Ou pale Kreyòl ayisyen ak Fransè.
+Ou ede traders konprann mache a, analize sitiyasyon, bay konsèy estrateji, eksplike tèm teknik, epi gide yo.
+Repons ou kout, klè, pratik. Si yo voye yon imaj grafik, analize li epi ba siyèn dirèk (UP/DOWN/WAIT) pou PROCHÈN BOUJI ak eksplikasyon.
+Pa janm di ou pa kapab — toujou eseye ede ak sa ou konnen.`;
+
+    const sc = (s) => s==="UP"?"#00ff88":s==="DOWN"?"#ff3366":"#ffd700";
+    const cc = (c) => c>=70?"#00ff88":c>=50?"#ffd700":"#ff3366";
+    const rc = (r) => ({FEBL:"#00ff88",MODERE:"#ffd700",ELE:"#ff3366"}[r]||"#a0c8e0");
+    const tc2 = (t) => ({HAUSYE:"#00ff88",BAISSE:"#ff3366",LATERAL:"#ffd700"}[t]||"#a0c8e0");
+    const fc2 = (f) => ({FO:"#00ff88",MWAYEN:"#ffd700",FEB:"#ff3366"}[f]||"#a0c8e0");
+    const sa = (s) => s==="UP"?"⬆":s==="DOWN"?"⬇":"⏸";
+    const fmtTime = (s) => s >= 60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}` : `0:${String(s).padStart(2,"0")}`;
+
+    function App() {
+      const [apiKey, setApiKey] = useState(() => localStorage.getItem("hdb_apikey") || "");
+      const [showSetup, setShowSetup] = useState(() => !localStorage.getItem("hdb_apikey"));
+
+      // Check access code
+      const checkCodeValid = () => {
+        const code = localStorage.getItem("hdb_code");
+        const expires = localStorage.getItem("hdb_code_expires");
+        if (!code || !expires) return false;
+        return new Date(expires) > new Date();
+      };
+
+      const [codeVerified, setCodeVerified] = useState(checkCodeValid);
+
+      // Show access code screen first
+      if (!codeVerified) {
+        return <AccessCodeScreen onVerified={() => setCodeVerified(true)}/>;
+      }
+
+      if (showSetup) {
+        return <ApiKeyScreen onSave={(k) => { setApiKey(k); setShowSetup(false); }}/>;
+      }
+
+      return <MainApp apiKey={apiKey} onResetKey={() => { localStorage.removeItem("hdb_apikey"); setShowSetup(true); setApiKey(""); }}/>;
+    }
+
+    function MainApp({ apiKey, onResetKey }) {
+      const [tab, setTab] = useState("live");
+      const [pair, setPair] = useState("EUR/USD");
+      const [showPairs, setShowPairs] = useState(false);
+      const [timerSel, setTimerSel] = useState(60);
+
+      const [liveSignals, setLiveSignals] = useState([]);
+      const [liveLoading, setLiveLoading] = useState(false);
+      const [liveCapture, setLiveCapture] = useState(null);
+      const [liveCaptureB64, setLiveCaptureB64] = useState(null);
+      const [liveCaptureType, setLiveCaptureType] = useState("image/png");
+      const [liveError, setLiveError] = useState(null);
+      const [captureCount, setCaptureCount] = useState(0);
+      const [currentSignal, setCurrentSignal] = useState(null);
+
+      const [timerVal, setTimerVal] = useState(null);
+      const [timerActive, setTimerActive] = useState(false);
+      const timerRef = useRef();
+
+      const [image, setImage] = useState(null);
+      const [imageB64, setImageB64] = useState(null);
+      const [imageType, setImageType] = useState("image/png");
+      const [result, setResult] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [history, setHistory] = useState([]);
+      const [drag, setDrag] = useState(false);
+
+      const [messages, setMessages] = useState([
+        { role:"assistant", content:"Bonjou! Mwen se HYPER DIEULYN BOT. Mwen ka analize chak screenshot grafik ou voye pou ba ou siyèn sou PROCHÈN BOUJI ki pral fome. Itilize mode LIVE pou analiz kontinyèl! 📊⚡" }
+      ]);
+      const [chatInput, setChatInput] = useState("");
+      const [chatImg, setChatImg] = useState(null);
+      const [chatImgB64, setChatImgB64] = useState(null);
+      const [chatImgType, setChatImgType] = useState("image/png");
+      const [chatLoading, setChatLoading] = useState(false);
+
+      const liveFileRef = useRef();
+      const fileRef = useRef();
+      const chatFileRef = useRef();
+      const chatBottomRef = useRef();
+      const signalListRef = useRef();
+      const audioCtxRef = useRef(null);
+      const [soundOn, setSoundOn] = useState(true);
+      const [alertFired10, setAlertFired10] = useState(false);
+
+      const playSound = (type) => {
+        try {
+          if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+          const ctx = audioCtxRef.current;
+          const beep = (freq, dur, vol=0.4, delay=0) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = freq; osc.type = "sine";
+            gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+            osc.start(ctx.currentTime + delay);
+            osc.stop(ctx.currentTime + delay + dur);
+          };
+          if (type === "signal_up") { beep(440,.15,.5,0); beep(550,.15,.5,.18); beep(660,.25,.6,.36); }
+          else if (type === "signal_down") { beep(660,.15,.5,0); beep(550,.15,.5,.18); beep(440,.25,.6,.36); }
+          else if (type === "warning") { beep(880,.1,.4,0); beep(880,.1,.4,.15); }
+          else if (type === "enter_now") { beep(1000,.12,.7,0); beep(1200,.12,.7,.14); beep(1000,.12,.7,.28); beep(1400,.3,.8,.42); }
+          else if (type === "expired") { beep(300,.4,.5,0); }
+        } catch(e) {}
+      };
+
+      useEffect(() => {
+        if (timerActive && timerVal > 0) {
+          timerRef.current = setTimeout(() => setTimerVal(v => v - 1), 1000);
+          if (timerVal === 30 && soundOn) playSound("warning");
+          if (timerVal === 10 && !alertFired10) { if(soundOn) playSound("enter_now"); setAlertFired10(true); }
+        } else if (timerActive && timerVal === 0) {
+          if(soundOn) playSound("expired");
+          setTimerActive(false); setTimerVal(null); setAlertFired10(false);
+        }
+        return () => clearTimeout(timerRef.current);
+      }, [timerActive, timerVal, alertFired10, soundOn]);
+
+      useEffect(() => {
+        if (signalListRef.current) signalListRef.current.scrollTop = 0;
+      }, [liveSignals]);
+
+      useEffect(() => {
+        chatBottomRef.current && chatBottomRef.current.scrollIntoView({ behavior:"smooth" });
+      }, [messages, chatLoading]);
+
+      const timerColor = timerVal === null ? "#00d4ff" : timerVal <= 10 ? "#ff3366" : timerVal <= 30 ? "#ffd700" : "#00ff88";
+      const timerPct = timerVal !== null ? (timerVal / timerSel) * 100 : 100;
+
+      const loadFile = (file, target="analyze") => {
+        if (!file || !file.type.startsWith("image/")) return;
+        const mime = file.type || "image/png";
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (target === "live") {
+            setLiveCapture(e.target.result);
+            setLiveCaptureB64(e.target.result.split(",")[1]);
+            setLiveCaptureType(mime); setLiveError(null);
+          } else if (target === "chat") {
+            setChatImg(e.target.result);
+            setChatImgB64(e.target.result.split(",")[1]);
+            setChatImgType(mime);
+          } else {
+            setImage(e.target.result);
+            setImageB64(e.target.result.split(",")[1]);
+            setImageType(mime); setResult(null); setError(null);
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      const onDrop = useCallback((e) => {
+        e.preventDefault(); setDrag(false);
+        loadFile(e.dataTransfer.files[0]);
+      }, []);
+
+      const callAPI = async (messages_payload, system) => {
+        const res = await fetch("/.netlify/functions/proxy", {
+          method:"POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ apiKey, system, messages: messages_payload })
+        });
+        if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error || `Erè ${res.status}`); }
+        return res.json();
+      };
+
+      const analyzeLive = async () => {
+        if (!liveCaptureB64) return;
+        setLiveLoading(true); setLiveError(null);
+        const captureNum = captureCount + 1;
+        setCaptureCount(captureNum);
+        try {
+          const data = await callAPI([{
+            role:"user",
+            content:[
+              { type:"image", source:{ type:"base64", media_type:liveCaptureType, data:liveCaptureB64 } },
+              { type:"text", text:`CAPTI #${captureNum} - Analize grafik ${pair} sa a. Ba mwen siyèn pou PROCHÈN BOUJI ki pral fome. Kounye a: ${new Date().toLocaleTimeString("fr")}` }
+            ]
+          }], ANALYZE_PROMPT);
+          const raw = data.content.map(b=>b.text||"").join("").trim();
+          const cleaned = raw.replace(/```json|```/g,"").trim();
+          const parsed = JSON.parse(cleaned);
+          const now = new Date().toLocaleTimeString("fr",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+          const newSignal = { ...parsed, pair, time: now, captureNum, img: liveCapture };
+          setCurrentSignal(newSignal);
+          setLiveSignals(prev => [newSignal, ...prev].slice(0, 20));
+          if (parsed.signal !== "WAIT") {
+            setTimerVal(timerSel); setTimerActive(true); setAlertFired10(false);
+            if (soundOn) playSound(parsed.signal === "UP" ? "signal_up" : "signal_down");
+          }
+          setLiveCapture(null); setLiveCaptureB64(null);
+        } catch(err) {
+          setLiveError(err.message || "Erè enkoni.");
+        } finally { setLiveLoading(false); }
+      };
+
+      const analyze = async () => {
+        if (!imageB64) return;
+        setLoading(true); setError(null);
+        try {
+          const data = await callAPI([{
+            role:"user",
+            content:[
+              { type:"image", source:{ type:"base64", media_type:imageType, data:imageB64 } },
+              { type:"text", text:`Analize grafik ${pair} sa a pou binary options Quotex. Ba siyèn pou prochèn bouji.` }
+            ]
+          }], ANALYZE_PROMPT);
+          const raw = data.content.map(b=>b.text||"").join("").trim();
+          const parsed = JSON.parse(raw.replace(/```json|```/g,"").trim());
+          setResult(parsed);
+          const now = new Date().toLocaleTimeString("fr",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+          setHistory(h=>[{...parsed,pair,time:now},...h].slice(0,8));
+          if (parsed.signal !== "WAIT") { setTimerVal(timerSel); setTimerActive(true); }
+        } catch(err) { setError(err.message||"Erè enkoni."); }
+        finally { setLoading(false); }
+      };
+
+      const sendChat = async () => {
+        const text = chatInput.trim();
+        if (!text && !chatImgB64) return;
+        const content = [];
+        if (chatImgB64) content.push({ type:"image", source:{ type:"base64", media_type:chatImgType, data:chatImgB64 } });
+        if (text) content.push({ type:"text", text });
+        const userMsg = { role:"user", content };
+        const userDisplay = { role:"user", content: text, img: chatImg };
+        setMessages(m=>[...m, userDisplay]);
+        setChatInput(""); setChatImg(null); setChatImgB64(null);
+        setChatLoading(true);
+        try {
+          const apiHistory = messages.slice(-10).map(m => ({
+            role: m.role,
+            content: typeof m.content === "string" ? [{ type:"text", text: m.content }] : m.content
+          }));
+          apiHistory.push(userMsg);
+          const data = await callAPI(apiHistory, CHAT_SYSTEM);
+          const reply = data.content.map(b=>b.text||"").join("").trim();
+          setMessages(m=>[...m, { role:"assistant", content:reply }]);
+        } catch(err) {
+          setMessages(m=>[...m, { role:"assistant", content:`⚠ Erè: ${err.message}` }]);
+        } finally { setChatLoading(false); }
+      };
+
+      const onChatKey = (e) => { if (e.key==="Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } };
+
+      const SignalCard = ({ sig, isLatest }) => (
+        <div style={{
+          border: `1px solid ${isLatest ? sc(sig.signal) : "#0d3a5c"}`,
+          borderLeft: `4px solid ${sc(sig.signal)}`,
+          borderRadius: 4, background: isLatest ? `${sc(sig.signal)}15` : "rgba(0,212,255,.015)",
+          padding: "12px 14px", marginBottom: 8,
+          boxShadow: isLatest ? `0 0 20px ${sc(sig.signal)}25` : "none", position: "relative"
+        }}>
+          {isLatest && (
+            <div style={{ position:"absolute", top:8, right:10, background:"rgba(0,255,136,.1)",
+              border:"1px solid #00ff88", color:"#00ff88", fontSize:"10px", letterSpacing:3,
+              padding:"2px 7px", borderRadius:2 }}>● LIVE</div>
+          )}
+          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8, flexWrap:"wrap" }}>
+            <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"1.1rem", fontWeight:900,
+              padding:"7px 14px", borderRadius:3, color: sc(sig.signal),
+              border:`2px solid ${sc(sig.signal)}`, background:`${sc(sig.signal)}15`, letterSpacing:2 }}>
+              {sa(sig.signal)} {sig.signal}
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
+              padding:"5px 10px", border:"1px solid #0d3a5c", borderRadius:3, background:"rgba(0,0,0,.3)" }}>
+              <div style={{ fontSize:"10px", letterSpacing:2, color:"#3a6a8a", marginBottom:2 }}>PROCHÈN BOUJI</div>
+              <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"12px",
+                color: sig.prochen_bouji==="UP"?"#00ff88":sig.prochen_bouji==="DOWN"?"#ff3366":"#ffd700" }}>
+                {sig.prochen_bouji==="UP"?"⬆ MONTE":sig.prochen_bouji==="DOWN"?"⬇ DESANN":"❓ INCÈTEN"}
+              </div>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", minWidth:60 }}>
+              <div style={{ fontSize:"10px", letterSpacing:2, color:"#3a6a8a", marginBottom:3 }}>KONFYANS</div>
+              <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"1rem", color:cc(sig.confidence), fontWeight:700 }}>
+                {sig.confidence}%
+              </div>
+              <div style={{ width:50, height:3, background:"#0d3a5c", borderRadius:2, overflow:"hidden", marginTop:3 }}>
+                <div style={{ height:"100%", width:`${sig.confidence}%`, background:cc(sig.confidence), borderRadius:2 }}/>
+              </div>
+            </div>
+            <div style={{ padding:"4px 9px", borderRadius:2,
+              border:`1px solid ${fc2(sig.fos_siyen||sig["fòs_siyèn"])}`,
+              background:`${fc2(sig.fos_siyen||sig["fòs_siyèn"])}10`,
+              color:fc2(sig.fos_siyen||sig["fòs_siyèn"]),
+              fontSize:"11px", letterSpacing:2, fontFamily:"'Orbitron',monospace" }}>
+              {sig.fos_siyen || sig["fòs_siyèn"] || "—"}
+            </div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(100px,1fr))", gap:5, marginBottom:8 }}>
+            {[
+              {l:"TREND",v:sig.trend,c:tc2(sig.trend)},
+              {l:"ANTRE",v:sig.entry,c:"#ffd700"},
+              {l:"EKSPIRY",v:sig.expiry,c:"#00ff88"},
+              {l:"RISK",v:sig.risk,c:rc(sig.risk)},
+              {l:"PATTERN",v:sig.pattern_we||sig["pattern_wè"],c:"#a0c8e0"},
+              {l:"SIPÒ",v:sig.support,c:"#00ff88"},
+              {l:"REZISTANS",v:sig.resistance,c:"#ff3366"},
+              {l:"INDIKASYON",v:sig.indikasyon,c:"#00d4ff"},
+            ].map(({l,v,c})=>(
+              <div key={l} style={{ background:"rgba(0,0,0,.2)", border:"1px solid #0d3a5c", padding:"5px 8px", borderRadius:2 }}>
+                <div style={{ fontSize:"9px", letterSpacing:2, color:"#3a6a8a", marginBottom:2 }}>{l}</div>
+                <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"11px", color:c,
+                  overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{v||"N/A"}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background:"rgba(0,212,255,.02)", border:"1px solid #0d3a5c",
+            borderLeft:"2px solid #00d4ff", padding:"8px 10px",
+            fontSize:"12px", lineHeight:1.7, color:"#a0c8e0", borderRadius:2, marginBottom:6 }}>
+            💬 {sig.reasoning}
+          </div>
+          <div style={{ display:"flex", justifyContent:"space-between", fontSize:"10px", letterSpacing:2, color:"#3a6a8a" }}>
+            <span>CAPTI #{sig.captureNum} · {sig.pair}</span>
+            <span>{sig.time}</span>
+          </div>
+        </div>
+      );
+
+      return (
+        <div style={{ minHeight:"100vh", background:"#030a0f", color:"#a0c8e0",
+          fontFamily:"'Share Tech Mono',monospace",
+          backgroundImage:"linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px)",
+          backgroundSize:"36px 36px", paddingBottom:40 }}>
+          <style>{`
+            @keyframes shimmer{0%,100%{background-position:0%}50%{background-position:100%}}
+            @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+            @keyframes scan{0%{left:-60%}100%{left:120%}}
+            @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+            @keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+            @keyframes tp{0%,100%{opacity:1}50%{opacity:.5}}
+            @keyframes glow{0%,100%{box-shadow:0 0 10px #00ff8840}50%{box-shadow:0 0 30px #00ff8890}}
+            @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+          `}</style>
+
+          {/* HEADER */}
+          <div style={{ textAlign:"center", padding:"18px 16px 12px", borderBottom:"1px solid #0d3a5c", position:"relative" }}>
+            <button onClick={()=>setSoundOn(v=>!v)} style={{
+              position:"absolute", top:14, right:12,
+              background: soundOn ? "rgba(0,255,136,.1)" : "rgba(255,51,102,.08)",
+              border: `1px solid ${soundOn ? "#00ff88" : "#ff3366"}`,
+              color: soundOn ? "#00ff88" : "#ff3366",
+              padding:"5px 10px", borderRadius:2, cursor:"pointer",
+              fontFamily:"'Orbitron',monospace", fontSize:"10px", letterSpacing:2
+            }}>
+              {soundOn ? "🔊 ON" : "🔇 OFF"}
+            </button>
+            <button onClick={onResetKey} style={{
+              position:"absolute", top:14, left:12,
+              background:"rgba(255,51,102,.06)", border:"1px solid #ff3366",
+              color:"#ff3366", padding:"5px 10px", borderRadius:2, cursor:"pointer",
+              fontFamily:"'Orbitron',monospace", fontSize:"10px", letterSpacing:1
+            }}>🔑 KLE</button>
+            <div style={{
+              fontFamily:"'Orbitron',monospace", fontSize:"clamp(1rem,4vw,1.6rem)", fontWeight:900, letterSpacing:3,
+              background:"linear-gradient(90deg,#00d4ff,#0080ff,#00ff88,#00d4ff)", backgroundSize:"300%",
+              WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", animation:"shimmer 4s infinite"
+            }}>
+              HYPER DIEULYN BOT QUOTEX
+            </div>
+            <div style={{ fontSize:"10px", letterSpacing:4, color:"#3a6a8a", marginTop:3 }}>
+              ANALIZ LIVE · SIYÈN PROCHÈN BOUJI · BY DIEULYN
+            </div>
+            <div style={{ position:"absolute", bottom:-1, left:"50%", transform:"translateX(-50%)",
+              width:200, height:2, background:"linear-gradient(90deg,transparent,#00d4ff,#00ff88,transparent)" }}/>
+          </div>
+
+          {/* TABS */}
+          <div style={{ display:"flex", borderBottom:"1px solid #0d3a5c" }}>
+            {[["live","⚡ LIVE"],["analyze","📊 ANALIZ"],["chat","💬 CHAT"]].map(([t,label])=>(
+              <button key={t} onClick={()=>setTab(t)} style={{
+                flex:1, padding:"11px 4px", background: tab===t ? "rgba(0,212,255,.08)" : "transparent",
+                border:"none", borderBottom: tab===t ? "2px solid #00d4ff" : "2px solid transparent",
+                color: tab===t ? "#00d4ff" : "#3a6a8a", fontFamily:"'Orbitron',monospace",
+                fontSize:"clamp(10px,2.5vw,13px)", letterSpacing:2, cursor:"pointer"
+              }}>{label}</button>
+            ))}
+          </div>
+
+          <div style={{ maxWidth:900, margin:"0 auto", padding:"12px 10px 0" }}>
+
+            {/* Pair + Timer */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
+              <div style={{ position:"relative" }}>
+                <div style={{ fontSize:"10px", letterSpacing:3, color:"#3a6a8a", marginBottom:4 }}>DEVIZ / AKTIF</div>
+                <button onClick={()=>setShowPairs(v=>!v)} style={{ width:"100%", background:"#071520",
+                  border:"1px solid #0d3a5c", color:"#00d4ff", padding:"8px 10px",
+                  fontFamily:"'Orbitron',monospace", fontSize:"12px", letterSpacing:2,
+                  cursor:"pointer", borderRadius:2, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span>{pair}</span><span style={{ color:"#3a6a8a" }}>{showPairs?"▲":"▼"}</span>
+                </button>
+                {showPairs && (
+                  <div style={{ position:"absolute", top:"100%", left:0, right:0, zIndex:200,
+                    background:"#071520", border:"1px solid #0d3a5c", borderRadius:2,
+                    maxHeight:220, overflowY:"auto", boxShadow:"0 8px 32px rgba(0,0,0,.9)" }}>
+                    {PAIRS.map(grp=>(
+                      <div key={grp.g}>
+                        <div style={{ padding:"4px 10px", fontSize:"9px", letterSpacing:3, color:"#3a6a8a",
+                          borderBottom:"1px solid #0d3a5c", background:"rgba(0,212,255,.03)" }}>{grp.g}</div>
+                        {grp.items.map(p=>(
+                          <div key={p} onClick={()=>{setPair(p);setShowPairs(false);}}
+                            style={{ padding:"7px 12px", fontSize:"12px", cursor:"pointer",
+                              color:p===pair?"#00d4ff":"#a0c8e0", background:p===pair?"rgba(0,212,255,.1)":"transparent" }}>
+                            {p===pair?"▶ ":""}{p}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <div style={{ fontSize:"10px", letterSpacing:3, color:"#3a6a8a", marginBottom:4 }}>DIRE TRED</div>
+                <div style={{ display:"flex", gap:3 }}>
+                  {TIMERS.map(t=>(
+                    <button key={t.sec} onClick={()=>{setTimerSel(t.sec);setTimerActive(false);setTimerVal(null);}}
+                      style={{ flex:1, padding:"7px 0", background:timerSel===t.sec?"rgba(0,212,255,.15)":"#071520",
+                        border:`1px solid ${timerSel===t.sec?"#00d4ff":"#0d3a5c"}`,
+                        color:timerSel===t.sec?"#00d4ff":"#3a6a8a",
+                        fontFamily:"'Share Tech Mono',monospace", fontSize:"10px",
+                        cursor:"pointer", borderRadius:2 }}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* TIMER BAR */}
+            {timerActive && timerVal !== null && (
+              <div style={{ marginBottom:10, background:"#071520", border:`1px solid ${timerColor}`,
+                borderRadius:3, padding:"10px 12px", display:"flex", alignItems:"center", gap:10,
+                animation:"glow 1.5s infinite" }}>
+                <div style={{ position:"relative", width:48, height:48, flexShrink:0 }}>
+                  <svg width="48" height="48" style={{ transform:"rotate(-90deg)" }}>
+                    <circle cx="24" cy="24" r="19" fill="none" stroke="#0d3a5c" strokeWidth="3"/>
+                    <circle cx="24" cy="24" r="19" fill="none" stroke={timerColor} strokeWidth="3"
+                      strokeDasharray={`${2*Math.PI*19}`}
+                      strokeDashoffset={`${2*Math.PI*19*(1-timerPct/100)}`}
+                      style={{ transition:"stroke-dashoffset .9s linear" }}/>
+                  </svg>
+                  <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center",
+                    fontFamily:"'Orbitron',monospace", fontSize:timerVal>=60?"10px":"13px", fontWeight:700, color:timerColor }}>
+                    {fmtTime(timerVal)}
+                  </div>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"11px", color:timerColor, letterSpacing:3, marginBottom:3 }}>
+                    {timerVal<=10?"⚠️ ANTRE KOUNYE A!":timerVal<=30?"⚡ PRESE ANTRE!":"⏱ KONT REBOU AN KOU"}
+                  </div>
+                  <div style={{ fontSize:"11px", color:"#3a6a8a" }}>
+                    {currentSignal ? `${sa(currentSignal.signal)} ${currentSignal.signal} · ${pair} · ${currentSignal.confidence}%` : ""}
+                  </div>
+                </div>
+                <button onClick={()=>{setTimerActive(false);setTimerVal(null);}}
+                  style={{ padding:"5px 10px", background:"rgba(255,51,102,.1)", border:"1px solid #ff3366",
+                    color:"#ff3366", fontFamily:"'Orbitron',monospace", fontSize:"10px", cursor:"pointer", borderRadius:2 }}>
+                  ⏹
+                </button>
+              </div>
+            )}
+
+            {/* ===== LIVE TAB ===== */}
+            {tab === "live" && (
+              <div>
+                {/* Stats */}
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6, marginBottom:10 }}>
+                  {[
+                    {l:"CAPTI",v:captureCount,c:"#00d4ff"},
+                    {l:"SIYÈN",v:liveSignals.length,c:"#00ff88"},
+                    {l:"DÈNYE",v:currentSignal?`${sa(currentSignal.signal)} ${currentSignal.signal}`:"—",c:currentSignal?sc(currentSignal.signal):"#3a6a8a"},
+                    {l:"KONFYANS",v:currentSignal?`${currentSignal.confidence}%`:"—",c:currentSignal?cc(currentSignal.confidence):"#3a6a8a"},
+                  ].map(({l,v,c})=>(
+                    <div key={l} style={{ background:"#071520", border:"1px solid #0d3a5c", padding:"7px 8px", borderRadius:3, textAlign:"center" }}>
+                      <div style={{ fontSize:"9px", letterSpacing:3, color:"#3a6a8a", marginBottom:3 }}>{l}</div>
+                      <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"13px", color:c, fontWeight:700 }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                  {/* Upload zone */}
+                  <div>
+                    <div style={{ fontSize:"10px", letterSpacing:3, color:"#3a6a8a", marginBottom:6 }}>
+                      VOYE SCREENSHOT GRAFIK
+                    </div>
+                    <div onClick={()=>liveFileRef.current.click()}
+                      onDragOver={e=>{e.preventDefault();setDrag(true);}}
+                      onDragLeave={()=>setDrag(false)}
+                      onDrop={e=>{e.preventDefault();setDrag(false);loadFile(e.dataTransfer.files[0],"live");}}
+                      style={{ border:`2px dashed ${drag?"#00ff88":liveCapture?"#00d4ff":"#0d3a5c"}`,
+                        borderRadius:4, padding:liveCapture?"0":"20px 12px",
+                        textAlign:"center", cursor:"pointer",
+                        background:liveCapture?"transparent":"rgba(0,212,255,.01)",
+                        position:"relative", overflow:"hidden", minHeight:100 }}>
+                      <div style={{ position:"absolute", top:0, left:"-60%", width:"55%", height:"100%",
+                        background:"linear-gradient(90deg,transparent,rgba(0,212,255,.04),transparent)",
+                        animation:"scan 3s infinite", pointerEvents:"none" }}/>
+                      {liveCapture ? (
+                        <img src={liveCapture} alt="Capti" style={{ width:"100%", maxHeight:220, objectFit:"contain", display:"block", background:"#000" }}/>
+                      ) : (
+                        <>
+                          <div style={{ fontSize:"1.8rem", marginBottom:5 }}>📸</div>
+                          <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"11px", color:"#00ff88", letterSpacing:2, marginBottom:3 }}>
+                            KLIKE — VOYE CAPTI
+                          </div>
+                          <div style={{ fontSize:"10px", color:"#3a6a8a" }}>PNG · JPG · GLISE &amp; DEPOZE</div>
+                        </>
+                      )}
+                    </div>
+                    <input ref={liveFileRef} type="file" accept="image/*" style={{ display:"none" }}
+                      onChange={e=>loadFile(e.target.files[0],"live")}/>
+
+                    {liveCapture && (
+                      <button onClick={()=>{setLiveCapture(null);setLiveCaptureB64(null);}}
+                        style={{ width:"100%", marginTop:5, padding:"6px", background:"rgba(255,51,102,.06)",
+                          border:"1px solid #ff3366", color:"#ff3366", fontFamily:"'Orbitron',monospace",
+                          fontSize:"11px", cursor:"pointer", borderRadius:2, letterSpacing:2 }}>
+                        ✕ EFASE
+                      </button>
+                    )}
+
+                    {liveError && (
+                      <div style={{ marginTop:6, padding:"8px 10px", background:"rgba(255,51,102,.08)",
+                        border:"1px solid rgba(255,51,102,.3)", color:"#ff3366", fontSize:"11px", borderRadius:3 }}>
+                        ⚠ {liveError}
+                      </div>
+                    )}
+
+                    <button onClick={analyzeLive} disabled={!liveCaptureB64||liveLoading}
+                      style={{ width:"100%", marginTop:8, padding:"14px",
+                        background:liveLoading?"transparent":"rgba(0,255,136,.08)",
+                        border:`2px solid ${(!liveCaptureB64||liveLoading)?"#0d3a5c":"#00ff88"}`,
+                        color:liveLoading?"transparent":"#00ff88",
+                        fontFamily:"'Orbitron',monospace", fontSize:"13px", fontWeight:700, letterSpacing:3,
+                        cursor:(!liveCaptureB64||liveLoading)?"not-allowed":"pointer",
+                        opacity:(!liveCaptureB64||liveLoading)?.4:1,
+                        borderRadius:2, position:"relative" }}>
+                      {liveLoading && (
+                        <span style={{ position:"absolute", top:"50%", left:"50%",
+                          transform:"translate(-50%,-50%)", width:18, height:18, border:"2px solid #00ff88",
+                          borderTopColor:"transparent", borderRadius:"50%", display:"block", animation:"spin .8s linear infinite" }}/>
+                      )}
+                      {liveLoading?"": `⚡ ANALIZE CAPTI #${captureCount+1}`}
+                    </button>
+
+                    {liveLoading && (
+                      <div style={{ textAlign:"center", marginTop:6, fontSize:"10px", color:"#00ff88", letterSpacing:3, animation:"tp .8s infinite" }}>
+                        ⏳ AI AP ANALIZE...
+                      </div>
+                    )}
+
+                    <div style={{ marginTop:10, padding:"8px 10px", background:"rgba(0,212,255,.02)",
+                      border:"1px solid #0d3a5c", borderLeft:"3px solid #00d4ff", borderRadius:3, fontSize:"11px", lineHeight:1.9 }}>
+                      <div style={{ color:"#00d4ff", fontFamily:"'Orbitron',monospace", fontSize:"9px", letterSpacing:3, marginBottom:5 }}>// KIJAN POU ITILIZE</div>
+                      <div style={{ color:"#a0c8e0" }}>
+                        1. Pran screenshot grafik Quotex ou<br/>
+                        2. Voye li isit (klike oswa glise)<br/>
+                        3. Klike ⚡ ANALIZE — AI ap travay<br/>
+                        4. Resevwa siyèn pou <span style={{ color:"#00ff88" }}>prochèn bouji</span><br/>
+                        5. Suiv kont rebou pou antre<br/>
+                        6. Voye nouvo capti pou siyèn swivan
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Signal feed */}
+                  <div>
+                    <div style={{ fontSize:"10px", letterSpacing:3, color:"#3a6a8a", marginBottom:6 }}>
+                      FLUX SIYÈN — {liveSignals.length} ANALIZ
+                    </div>
+                    {liveSignals.length === 0 ? (
+                      <div style={{ border:"1px solid #0d3a5c", borderRadius:4, padding:"30px 16px",
+                        textAlign:"center", background:"rgba(0,212,255,.01)" }}>
+                        <div style={{ fontSize:"2rem", marginBottom:8, opacity:.3 }}>📊</div>
+                        <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"11px", color:"#3a6a8a", letterSpacing:3, marginBottom:6 }}>
+                          AN ATANT PREMYE CAPTI
+                        </div>
+                        <div style={{ fontSize:"11px", color:"#3a6a8a" }}>
+                          Voye yon screenshot pou kòmanse
+                        </div>
+                      </div>
+                    ) : (
+                      <div ref={signalListRef} style={{ maxHeight:520, overflowY:"auto" }}>
+                        {liveSignals.map((sig,i)=>(
+                          <SignalCard key={`${sig.captureNum}-${sig.time}`} sig={sig} isLatest={i===0}/>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===== ANALYZE TAB ===== */}
+            {tab === "analyze" && (
+              <div>
+                <div onClick={()=>fileRef.current.click()}
+                  onDragOver={e=>{e.preventDefault();setDrag(true);}}
+                  onDragLeave={()=>setDrag(false)} onDrop={onDrop}
+                  style={{ border:`1px dashed ${drag?"#00d4ff":"#0d3a5c"}`, borderRadius:4,
+                    padding:"24px 16px", textAlign:"center", cursor:"pointer",
+                    background:drag?"rgba(0,212,255,.05)":"rgba(0,212,255,.015)",
+                    position:"relative", overflow:"hidden" }}>
+                  <div style={{ position:"absolute", top:0, left:"-60%", width:"55%", height:"100%",
+                    background:"linear-gradient(90deg,transparent,rgba(0,212,255,.04),transparent)",
+                    animation:"scan 4s infinite", pointerEvents:"none" }}/>
+                  <div style={{ fontSize:"1.8rem", marginBottom:6 }}>📊</div>
+                  <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"12px", color:"#00d4ff", letterSpacing:3, marginBottom:3 }}>
+                    KLIKE — UPLOADE SCREENSHOT {pair}
+                  </div>
+                  <div style={{ fontSize:"10px", color:"#3a6a8a", letterSpacing:2 }}>GLISE &amp; DEPOZE · PNG · JPG · WEBP</div>
+                  <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>loadFile(e.target.files[0])}/>
+                </div>
+
+                {image && (
+                  <div style={{ marginTop:8, border:"1px solid #0d3a5c", borderRadius:4, overflow:"hidden", position:"relative" }}>
+                    <div style={{ position:"absolute", top:8, left:8, background:"rgba(0,0,0,.85)",
+                      border:"1px solid #0d3a5c", padding:"3px 8px", fontSize:"10px", letterSpacing:3, color:"#00d4ff", zIndex:1 }}>
+                      {pair} ✓
+                    </div>
+                    <img src={image} alt="Grafik" style={{ width:"100%", maxHeight:280, objectFit:"contain", display:"block", background:"#000" }}/>
+                  </div>
+                )}
+
+                {error && (
+                  <div style={{ marginTop:8, padding:"9px 12px", background:"rgba(255,51,102,.08)",
+                    border:"1px solid rgba(255,51,102,.3)", color:"#ff3366", fontSize:"12px", borderRadius:3 }}>
+                    ⚠ {error}
+                  </div>
+                )}
+
+                <button onClick={analyze} disabled={!image||loading}
+                  style={{ width:"100%", marginTop:8, padding:"12px", background:"transparent",
+                    border:"1px solid #00d4ff", color:loading?"transparent":"#00d4ff",
+                    fontFamily:"'Orbitron',monospace", fontSize:"13px", fontWeight:700, letterSpacing:4,
+                    cursor:(!image||loading)?"not-allowed":"pointer", opacity:(!image||loading)?.4:1,
+                    borderRadius:2, position:"relative" }}>
+                  {loading && <span style={{ position:"absolute", top:"50%", left:"50%",
+                    transform:"translate(-50%,-50%)", width:16, height:16, border:"2px solid #00d4ff",
+                    borderTopColor:"transparent", borderRadius:"50%", display:"block", animation:"spin .8s linear infinite" }}/>}
+                  ⚡ ANALIZE {pair}
+                </button>
+
+                {result && (
+                  <div style={{ marginTop:12 }}>
+                    <SignalCard sig={{...result, captureNum:"M", pair, time: new Date().toLocaleTimeString("fr")}} isLatest={true}/>
+                  </div>
+                )}
+
+                {history.length > 0 && (
+                  <div style={{ marginTop:16, borderTop:"1px solid #0d3a5c", paddingTop:10 }}>
+                    <div style={{ fontFamily:"'Orbitron',monospace", fontSize:"9px", letterSpacing:4, color:"#3a6a8a", marginBottom:6 }}>
+                      // ISTORIK
+                    </div>
+                    {history.map((h,i)=>(
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:7, padding:"6px 10px",
+                        background:"rgba(255,255,255,.012)", border:"1px solid #0d3a5c", borderRadius:3,
+                        fontSize:"11px", marginBottom:4, flexWrap:"wrap" }}>
+                        <span style={{ fontFamily:"'Orbitron',monospace", fontSize:"10px", padding:"2px 7px",
+                          borderRadius:2, color:sc(h.signal), background:`${sc(h.signal)}18`, minWidth:55, textAlign:"center" }}>
+                          {sa(h.signal)} {h.signal}
+                        </span>
+                        <span style={{ color:"#00d4ff" }}>{h.pair}</span>
+                        <span style={{ color:tc2(h.trend) }}>{h.trend}</span>
+                        <span style={{ color:"#3a6a8a" }}>{h.confidence}%</span>
+                        <span style={{ color:"#00ff88" }}>{h.expiry}</span>
+                        <span style={{ marginLeft:"auto", color:"#3a6a8a" }}>{h.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ===== CHAT TAB ===== */}
+            {tab === "chat" && (
+              <div>
+                <div style={{ height:400, overflowY:"auto", border:"1px solid #0d3a5c", borderRadius:4,
+                  background:"#071520", padding:"10px", marginBottom:8, display:"flex", flexDirection:"column", gap:8 }}>
+                  {messages.map((m,i)=>(
+                    <div key={i} style={{ display:"flex", flexDirection:"column",
+                      alignItems: m.role==="user"?"flex-end":"flex-start" }}>
+                      {m.img && (
+                        <img src={m.img} alt="" style={{ maxWidth:160, borderRadius:3, marginBottom:3,
+                          border:"1px solid #0d3a5c", alignSelf:m.role==="user"?"flex-end":"flex-start" }}/>
+                      )}
+                      <div style={{ maxWidth:"84%", padding:"8px 11px",
+                        borderRadius:m.role==="user"?"4px 4px 2px 4px":"4px 4px 4px 2px",
+                        background:m.role==="user"?"rgba(0,212,255,.12)":"rgba(0,255,136,.06)",
+                        border:`1px solid ${m.role==="user"?"rgba(0,212,255,.3)":"rgba(0,255,136,.2)"}`,
+                        fontSize:"12px", lineHeight:1.7, color:m.role==="user"?"#00d4ff":"#a0c8e0",
+                        whiteSpace:"pre-wrap", wordBreak:"break-word" }}>
+                        {m.role==="assistant" && (
+                          <span style={{ fontFamily:"'Orbitron',monospace", fontSize:"9px",
+                            letterSpacing:2, color:"#00ff88", display:"block", marginBottom:3 }}>HYPER DIEULYN ▸</span>
+                        )}
+                        {m.content}
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div style={{ display:"flex", alignItems:"flex-start" }}>
+                      <div style={{ padding:"8px 11px", background:"rgba(0,255,136,.06)", border:"1px solid rgba(0,255,136,.2)",
+                        borderRadius:"4px 4px 4px 2px", fontSize:"12px", color:"#3a6a8a" }}>
+                        <span style={{ fontFamily:"'Orbitron',monospace", fontSize:"9px", letterSpacing:2, color:"#00ff88", display:"block", marginBottom:3 }}>HYPER DIEULYN ▸</span>
+                        <span style={{ animation:"tp .8s infinite" }}>⏳ ap réfléchi...</span>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={chatBottomRef}/>
+                </div>
+
+                {chatImg && (
+                  <div style={{ marginBottom:6, display:"flex", alignItems:"center", gap:7 }}>
+                    <img src={chatImg} alt="" style={{ height:40, borderRadius:3, border:"1px solid #0d3a5c" }}/>
+                    <span style={{ fontSize:"10px", color:"#00d4ff", letterSpacing:2 }}>Imaj prèt ✓</span>
+                    <button onClick={()=>{setChatImg(null);setChatImgB64(null);}}
+                      style={{ marginLeft:"auto", background:"none", border:"1px solid #3a6a8a",
+                        color:"#3a6a8a", padding:"2px 7px", cursor:"pointer", borderRadius:2, fontSize:"11px" }}>✕</button>
+                  </div>
+                )}
+
+                <div style={{ display:"flex", gap:6 }}>
+                  <button onClick={()=>chatFileRef.current.click()}
+                    style={{ padding:"8px 10px", background:"#071520", border:"1px solid #0d3a5c",
+                      color:"#3a6a8a", cursor:"pointer", borderRadius:2, fontSize:"1rem" }}
+                    title="Voye grafik">📎</button>
+                  <input ref={chatFileRef} type="file" accept="image/*" style={{ display:"none" }}
+                    onChange={e=>loadFile(e.target.files[0],"chat")}/>
+                  <textarea value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={onChatKey}
+                    placeholder="Poze yon kesyon... (Enter pou voye)"
+                    rows={2}
+                    style={{ flex:1, background:"#071520", border:"1px solid #0d3a5c", color:"#a0c8e0",
+                      padding:"8px 10px", fontFamily:"'Share Tech Mono',monospace", fontSize:"12px",
+                      borderRadius:2, outline:"none", lineHeight:1.5 }}/>
+                  <button onClick={sendChat} disabled={chatLoading||(!chatInput.trim()&&!chatImgB64)}
+                    style={{ padding:"8px 12px", background:"rgba(0,255,136,.1)", border:"1px solid #00ff88",
+                      color:"#00ff88", fontFamily:"'Orbitron',monospace", fontSize:"11px", letterSpacing:2,
+                      cursor:(chatLoading||(!chatInput.trim()&&!chatImgB64))?"not-allowed":"pointer",
+                      opacity:(chatLoading||(!chatInput.trim()&&!chatImgB64))?.4:1,
+                      borderRadius:2, whiteSpace:"nowrap" }}>
+                    {chatLoading?"...":"VOYE ▶"}
+                  </button>
+                </div>
+                <div style={{ fontSize:"10px", letterSpacing:2, color:"#3a6a8a", marginTop:4, textAlign:"center" }}>
+                  📎 pou voye grafik · Enter pou voye mesaj
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  </script>
+</body>
+</html>
