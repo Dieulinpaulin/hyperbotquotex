@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HYPERBOT — Dashboard Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#030a0f;color:#a0c8e0;font-family:'Share Tech Mono',monospace;min-height:100vh;
+      background-image:linear-gradient(rgba(0,212,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.025) 1px,transparent 1px);
+      background-size:36px 36px;}
+    #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .login-box{background:#071520;border:1px solid #0d3a5c;border-top:3px solid #FFD700;padding:36px;border-radius:4px;width:100%;max-width:380px;text-align:center;}
+    .login-title{font-family:'Orbitron',monospace;font-size:1rem;color:#FFD700;letter-spacing:3px;margin-bottom:24px;}
+    .form-input{width:100%;background:#030a0f;border:1px solid #0d3a5c;color:#fff;padding:11px 14px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;border-radius:2px;margin-bottom:12px;box-sizing:border-box;}
+    .form-input:focus{border-color:#FFD700;}
+    .btn-gold{width:100%;padding:12px;background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;font-family:'Orbitron',monospace;font-weight:900;font-size:12px;letter-spacing:3px;border:none;cursor:pointer;border-radius:2px;}
+    #dashboard{display:none;padding:20px;max-width:1000px;margin:0 auto;}
+    .dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px;}
+    .dash-title{font-family:'Orbitron',monospace;font-size:1.1rem;color:#FFD700;letter-spacing:3px;}
+    .btn-logout{padding:7px 14px;background:rgba(255,51,102,.1);border:1px solid #ff3366;color:#ff3366;font-family:'Orbitron',monospace;font-size:10px;cursor:pointer;border-radius:2px;letter-spacing:2px;}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+    .stat-box{background:#071520;border:1px solid #0d3a5c;padding:16px;border-radius:3px;text-align:center;}
+    .stat-num{font-family:'Orbitron',monospace;font-size:1.5rem;color:#FFD700;font-weight:900;}
+    .stat-lbl{font-size:9px;letter-spacing:3px;color:#3a6a8a;margin-top:4px;}
+    .section{background:#071520;border:1px solid #0d3a5c;border-radius:3px;padding:20px;margin-bottom:20px;}
+    .section-title{font-family:'Orbitron',monospace;font-size:11px;color:#00d4ff;letter-spacing:3px;margin-bottom:16px;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end;}
+    .form-group{display:flex;flex-direction:column;gap:5px;}
+    .form-label{font-size:9px;letter-spacing:3px;color:#3a6a8a;}
+    .btn-create{padding:11px 20px;background:rgba(0,255,136,.1);border:1px solid #00ff88;color:#00ff88;font-family:'Orbitron',monospace;font-size:11px;cursor:pointer;border-radius:2px;letter-spacing:2px;white-space:nowrap;}
+    .created-code{margin-top:14px;padding:14px;background:rgba(0,255,136,.06);border:2px solid #00ff88;border-radius:3px;display:none;}
+    .code-display{font-family:'Orbitron',monospace;font-size:1.4rem;color:#00ff88;letter-spacing:4px;text-align:center;margin-bottom:6px;}
+    .code-info{font-size:11px;color:#3a6a8a;text-align:center;}
+    .btn-copy{display:block;width:100%;margin-top:10px;padding:8px;background:rgba(0,212,255,.1);border:1px solid #00d4ff;color:#00d4ff;font-family:'Orbitron',monospace;font-size:10px;cursor:pointer;border-radius:2px;letter-spacing:2px;}
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:12px;}
+    th{padding:10px 12px;text-align:left;font-size:9px;letter-spacing:3px;color:#3a6a8a;border-bottom:1px solid #0d3a5c;font-family:'Orbitron',monospace;}
+    td{padding:10px 12px;border-bottom:1px solid rgba(13,58,92,.5);}
+    .badge{padding:3px 8px;border-radius:2px;font-size:9px;letter-spacing:2px;font-family:'Orbitron',monospace;}
+    .badge-active{background:rgba(0,255,136,.1);border:1px solid #00ff88;color:#00ff88;}
+    .badge-expired{background:rgba(255,51,102,.1);border:1px solid #ff3366;color:#ff3366;}
+    .badge-inactive{background:rgba(58,106,138,.1);border:1px solid #3a6a8a;color:#3a6a8a;}
+    .btn-deact{padding:4px 10px;background:rgba(255,51,102,.08);border:1px solid #ff3366;color:#ff3366;font-family:'Orbitron',monospace;font-size:9px;cursor:pointer;border-radius:2px;}
+    .days-left{font-family:'Orbitron',monospace;font-size:11px;}
+    .days-ok{color:#00ff88;} .days-warn{color:#ffd700;} .days-danger{color:#ff3366;}
+    .search-row{display:flex;gap:10px;margin-bottom:14px;}
+    .search-input{flex:1;background:#030a0f;border:1px solid #0d3a5c;color:#fff;padding:9px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;border-radius:2px;}
+    .wa-msg{background:#030a0f;border:1px solid #0d3a5c;padding:12px;border-radius:3px;font-size:12px;line-height:1.8;color:#a0c8e0;margin-top:10px;display:none;white-space:pre-wrap;}
+  </style>
+</head>
+<body>
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">🔐 HYPERBOT ADMIN</div>
+    <input type="password" id="admin-pass" class="form-input" placeholder="Mete modpas admin ou..." onkeydown="if(event.key==='Enter')login()"/>
+    <button class="btn-gold" onclick="login()">⚡ KONEKTE</button>
+    <div id="login-err" style="color:#ff3366;font-size:11px;margin-top:10px;display:none;">❌ Modpas enkòrèk</div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="dash-header">
+    <div class="dash-title">⚡ HYPERBOT ADMIN DASHBOARD</div>
+    <button class="btn-logout" onclick="logout()">DEKONEKTE</button>
+  </div>
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-box"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">TOTAL KÒD</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-active">—</div><div class="stat-lbl">AKTIF</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-expired">—</div><div class="stat-lbl">EKSPIRE</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-revenue">—</div><div class="stat-lbl">REVNI/MWA (HTG)</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">// KREYE NOUVO KÒD AKSÈ</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">NON KLIYAN</label>
+        <input type="text" id="new-name" class="form-input" placeholder="Jean Baptiste..." style="margin:0"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">NIMEWO TELEFÒN</label>
+        <input type="text" id="new-phone" class="form-input" placeholder="3712-3456" style="margin:0"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">JOU</label>
+        <select id="new-days" class="form-input" style="margin:0">
+          <option value="30">30 jou</option>
+          <option value="60">60 jou</option>
+          <option value="90">90 jou</option>
+          <option value="7">7 jou (test)</option>
+        </select>
+      </div>
+      <button class="btn-create" onclick="createCode()">⚡ KREYE KÒD</button>
+    </div>
+    <div class="created-code" id="created-code">
+      <div class="code-display" id="code-text">—</div>
+      <div class="code-info" id="code-expiry">—</div>
+      <button class="btn-copy" onclick="copyCode()">📋 KOPYE KÒD LA</button>
+      <button class="btn-copy" onclick="showWaMsg()" style="margin-top:6px;border-color:#25D366;color:#25D366;background:rgba(37,211,102,.08)">💬 KOPYE MESAJ WHATSAPP</button>
+      <div class="wa-msg" id="wa-msg"></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">// TOUT KÒD AKSÈ</div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="search-input" placeholder="Chèche pa non, telefòn, oswa kòd..." oninput="filterCodes()"/>
+      <button class="btn-create" onclick="loadCodes()">🔄 AKTYALIZE</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>KÒD</th><th>NON KLIYAN</th><th>TELEFÒN</th>
+            <th>EKSPIRY</th><th>JOU RETE</th><th>ESTATI</th><th>AKSYON</th>
+          </tr>
+        </thead>
+        <tbody id="codes-table">
+          <tr><td colspan="7" style="text-align:center;color:#3a6a8a;padding:30px">Ap chaje...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_KEY = "HYPERBOT_ADMIN_2026";
+  const ADMIN_PASS = "HyperAdmin2026!";
+  let allCodes = [];
+  let currentCode = "", currentName = "", currentPhone = "", currentExpiry = "";
+
+  function login() {
+    const pass = document.getElementById('admin-pass').value;
+    if (pass === ADMIN_PASS) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadCodes();
+    } else {
+      document.getElementById('login-err').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('admin-pass').value = '';
+  }
+
+  async function apiCall(body) {
+    const res = await fetch('/.netlify/functions/access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify(body)
+    });
+    return res.json();
+  }
+
+  async function loadCodes() {
+    try {
+      const data = await apiCall({ action: 'list' });
+      allCodes = data.codes || [];
+      renderCodes(allCodes);
+      updateStats(allCodes);
+    } catch(e) { console.error(e); }
+  }
+
+  function updateStats(codes) {
+    const now = new Date();
+    const active = codes.filter(c => c.is_active && new Date(c.expires_at) > now);
+    const expired = codes.filter(c => !c.is_active || new Date(c.expires_at) <= now);
+    document.getElementById('stat-total').textContent = codes.length;
+    document.getElementById('stat-active').textContent = active.length;
+    document.getElementById('stat-expired').textContent = expired.length;
+    document.getElementById('stat-revenue').textContent = (active.length * 3000).toLocaleString();
+  }
+
+  function renderCodes(codes) {
+    const now = new Date();
+    const tbody = document.getElementById('codes-table');
+    if (!codes.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#3a6a8a;padding:30px">Pa gen kòd ankò — kreye premye a!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = codes.map(c => {
+      const expires = new Date(c.expires_at);
+      const daysLeft = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+      const isExpired = expires <= now;
+      const isActive = c.is_active && !isExpired;
+      let badge = !c.is_active ? '<span class="badge badge-inactive">DEZAKTIVE</span>' : isExpired ? '<span class="badge badge-expired">EKSPIRE</span>' : '<span class="badge badge-active">AKTIF</span>';
+      let daysClass = daysLeft > 10 ? 'days-ok' : daysLeft > 3 ? 'days-warn' : 'days-danger';
+      let daysText = isExpired ? 'EKSPIRE' : `${daysLeft} jou`;
+      return `<tr>
+        <td><span style="font-family:'Orbitron',monospace;color:#00d4ff;font-size:12px">${c.code}</span></td>
+        <td>${c.client_name||'—'}</td><td>${c.client_phone||'—'}</td>
+        <td style="font-size:11px">${expires.toLocaleDateString('fr')}</td>
+        <td><span class="days-left ${daysClass}">${daysText}</span></td>
+        <td>${badge}</td>
+        <td>${isActive?`<button class="btn-deact" onclick="deactivate('${c.code}')">BLOKE</button>`:'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterCodes() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const filtered = allCodes.filter(c =>
+      (c.code||'').toLowerCase().includes(q) ||
+      (c.client_name||'').toLowerCase().includes(q) ||
+      (c.client_phone||'').toLowerCase().includes(q)
+    );
+    renderCodes(filtered);
+  }
+
+  async function createCode() {
+    const name = document.getElementById('new-name').value.trim() || 'Kliyan';
+    const phone = document.getElementById('new-phone').value.trim();
+    const days = parseInt(document.getElementById('new-days').value);
+    const btn = document.querySelector('.btn-create');
+    btn.textContent = '⏳ AP KREYE...'; btn.disabled = true;
+    try {
+      const data = await apiCall({ action: 'create', client_name: name, client_phone: phone, days });
+      if (data.success) {
+        currentCode = data.code; currentName = name; currentPhone = phone;
+        currentExpiry = new Date(data.expires_at).toLocaleDateString('fr');
+        document.getElementById('code-text').textContent = data.code;
+        document.getElementById('code-expiry').textContent = `${name} · Ekspire: ${currentExpiry}`;
+        document.getElementById('created-code').style.display = 'block';
+        document.getElementById('wa-msg').style.display = 'none';
+        document.getElementById('new-name').value = '';
+        document.getElementById('new-phone').value = '';
+        loadCodes();
+      }
+    } catch(e) { alert('Erè: ' + e.message); }
+    btn.textContent = '⚡ KREYE KÒD'; btn.disabled = false;
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(currentCode).then(() => {
+      const btn = document.querySelector('.btn-copy');
+      btn.textContent = '✅ KOPYE!';
+      setTimeout(() => btn.textContent = '📋 KOPYE KÒD LA', 2000);
+    });
+  }
+
+  function showWaMsg() {
+    const msg = `Bonjou ${currentName}! 👋\n\n✅ Peman ou konfime — Mèsi!\n\n🤖 *HYPER DIEULYN BOT QUOTEX*\n\n🔐 *Kòd Aksè ou:*\n${currentCode}\n\n⏰ *Ekspiry:* ${currentExpiry}\n📱 *Nimewo:* ${currentPhone}\n\n🌐 *Lyen Bot:*\nhttps://hyperbotdieu.netlify.app\n\n📌 *Enstriksyon:*\n1. Ouvri lyen an sou Chrome\n2. Tape kòd aksè ou a\n3. Mete kle API ou\n4. Kòmanse resevwa siyèn! ⚡\n\n❓ Kesyon? WhatsApp: 3239-9183\nBon tred! 📊🔥`;
+    document.getElementById('wa-msg').textContent = msg;
+    document.getElementById('wa-msg').style.display = 'block';
+    navigator.clipboard.writeText(msg).then(() => { alert('✅ Mesaj WhatsApp kopye!'); });
+  }
+
+  async function deactivate(code) {
+    if (!confirm(`Bloke kòd ${code}?`)) return;
+    await apiCall({ action: 'deactivate', code });
+    loadCodes();
+  }
+</script>
+</body>
+</html>
